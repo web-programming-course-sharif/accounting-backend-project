@@ -8,11 +8,11 @@ type SignUpRequest struct {
 	Code         string `json:"code"`
 }
 type VerifyRequest struct {
-	MobileNumber string `json:"mobileNumber" validation:"required"`
+	MobileNumber string `json:"mobile_number" validation:"required"`
 	Code         string `json:"code" validation:"required"`
 }
 type LoginRequest struct {
-	MobileNumber string `json:"mobileNumber"`
+	MobileNumber string `json:"mobile_number"`
 	Password     string `json:"password"`
 }
 type ForgotRequest struct {

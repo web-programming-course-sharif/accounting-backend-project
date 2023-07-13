@@ -30,7 +30,7 @@ type Handler struct {
 func HandlerUser(UserRepository repositories.UserRepository) *Handler {
 	return &Handler{UserRepository: UserRepository}
 }
-func (h *Handler) SingUp(c echo.Context) error {
+func (h *Handler) SignUp(c echo.Context) error {
 	request := new(authDto.SignUpRequest)
 	err := c.Bind(request)
 	if err != nil {
@@ -49,11 +49,11 @@ func (h *Handler) SingUp(c echo.Context) error {
 	if user.Id != 0 {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This MobileNumber already exist"})
 	}
-	//Sent Code To client
-	code, err := sendSMS(request.MobileNumber)
-	if err != nil {
-		return c.JSON(http.StatusServiceUnavailable, dto.ErrorResult{Code: http.StatusServiceUnavailable, Message: err.Error()})
-	}
+	//code, err := sendSMS(request.MobileNumber)
+	//if err != nil {
+	//	return c.JSON(http.StatusServiceUnavailable, dto.ErrorResult{Code: http.StatusServiceUnavailable, Message: err.Error()})
+	//}
+	code := "123456"
 	//add code to request model and convert to json
 	request.Code = code
 	redisValue, err := json.Marshal(request)
@@ -63,8 +63,7 @@ func (h *Handler) SingUp(c echo.Context) error {
 	}
 	//set mobile number and code in redis
 	var ctx = context.Background()
-	err = redis.Rdb.Set(ctx, string(redisValue), code, time.Minute+2*time.Second).Err()
-
+	err = redis.Rdb.Set(ctx, request.MobileNumber, string(redisValue), time.Minute+2*time.Second).Err()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
 	}
@@ -98,6 +97,8 @@ func (h *Handler) Verify(c echo.Context) error {
 	}
 	//Create User And save to db
 	user := models.User{
+		FirstName:    signUpRequest.FirstName,
+		LastName:     signUpRequest.LastName,
 		MobileNumber: request.MobileNumber,
 		Password:     string(hashedPassword),
 		IsVerify:     true,
@@ -203,7 +204,7 @@ func sendSMS(mobileNumber string) (string, error) {
 	// set seed
 	rand.Seed(time.Now().UnixNano())
 	// generate random number and print on console
-	code := strconv.Itoa(rand.Intn(99999-10000) + 10000)
+	code := strconv.Itoa(rand.Intn(999999-100000) + 10000)
 	q := req.URL.Query()
 	q.Add("receptor", mobileNumber)
 	q.Add("token", code)
@@ -224,4 +225,42 @@ func sendSMS(mobileNumber string) (string, error) {
 		return code, nil
 	}
 	return "", errors.New(response.Entries[0].Message)
+}
+
+func (h *Handler) Account(c echo.Context) error {
+	request := new(authDto.LoginRequest)
+	token := c.Request().Header.Get()
+	err := c.Bind(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err = validation.Struct(request)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+	//check user exist
+	user := h.UserRepository.FindUserByMobileNumber(request.MobileNumber)
+	if user.Id == 0 {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This Email not exist"})
+	}
+	//generate token
+	claims := jwt.MapClaims{}
+	claims["id"] = user.Id
+	claims["exp"] = time.Now().Add(time.Hour * 24 * 30).Unix() // 2 hours expired
+
+	token, errGenerateToken := jwtToken.GenerateToken(&claims)
+	if errGenerateToken != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	response := authDto.SignUpResponse{
+		User:  user,
+		Token: token,
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: response})
+
 }

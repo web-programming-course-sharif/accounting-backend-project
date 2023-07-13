@@ -11,8 +11,10 @@ func AuthRoutes(e *echo.Group) {
 	userRepository := repositories.RepositoryUser(postgres.DB)
 	h := handlers.HandlerUser(userRepository)
 
-	e.POST("/signUp", h.SingUp)
+	e.POST("/signUp", h.SignUp)
 	e.POST("/login", h.Login)
+	e.POST("/verify", h.Verify)
+	e.POST("/myAccount", h.Account)
 	e.POST("/forgot", h.Forgot)
 	//e.GET("/check-auth", middleware.Auth(h.CheckAuth)) // add this code
 }
