@@ -49,11 +49,10 @@ func (h *Handler) SignUp(c echo.Context) error {
 	if user.Id != 0 {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This PhoneNumber already exist"})
 	}
-	//code, err := sendSMS(request.PhoneNumber)
-	//if err != nil {
-	//	return c.JSON(http.StatusServiceUnavailable, dto.ErrorResult{Code: http.StatusServiceUnavailable, Message: err.Error()})
-	//}
-	code := "123456"
+	code, err := sendSMS(request.PhoneNumber)
+	if err != nil {
+		return c.JSON(http.StatusServiceUnavailable, dto.ErrorResult{Code: http.StatusServiceUnavailable, Message: err.Error()})
+	}
 	//add code to request model and convert to json
 	request.Code = code
 	redisValue, err := json.Marshal(request)
