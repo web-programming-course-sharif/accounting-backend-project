@@ -3,6 +3,7 @@ package main
 import (
 	"accounting-project/initializers"
 	"accounting-project/pkg/postgres"
+	"accounting-project/pkg/redis"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -12,7 +13,7 @@ func init() {
 	initializers.LoadEnvVariables()
 	postgres.ConnectToDb()
 	initializers.SyncDatabase()
-	//redis.ConnectToRedis()
+	redis.ConnectToRedis()
 }
 func main() {
 	e := echo.New()

@@ -1,6 +1,8 @@
 package authDto
 
+import "accounting-project/models"
+
 type SignUpResponse struct {
-	Email string `json:"email"`
-	Token string `json:"token"`
+	User  models.User `json:"user"`
+	Token string      `json:"token"`
 }
