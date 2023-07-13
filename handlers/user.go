@@ -227,40 +227,11 @@ func sendSMS(mobileNumber string) (string, error) {
 	return "", errors.New(response.Entries[0].Message)
 }
 
-func (h *Handler) Account(c echo.Context) error {
-	request := new(authDto.LoginRequest)
-	token := c.Request().Header.Get()
-	err := c.Bind(request)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
-	}
+func (h *Handler) CheckAuth(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(float64)
 
-	validation := validator.New()
-	err = validation.Struct(request)
+	user := h.UserRepository.CheckAuth(int(userId))
 
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
-	}
-	//check user exist
-	user := h.UserRepository.FindUserByMobileNumber(request.MobileNumber)
-	if user.Id == 0 {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This Email not exist"})
-	}
-	//generate token
-	claims := jwt.MapClaims{}
-	claims["id"] = user.Id
-	claims["exp"] = time.Now().Add(time.Hour * 24 * 30).Unix() // 2 hours expired
-
-	token, errGenerateToken := jwtToken.GenerateToken(&claims)
-	if errGenerateToken != nil {
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
-	}
-
-	response := authDto.SignUpResponse{
-		User:  user,
-		Token: token,
-	}
-
-	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: response})
-
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
 }

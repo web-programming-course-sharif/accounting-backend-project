@@ -9,6 +9,7 @@ type UserRepository interface {
 	FindUserByMobileNumber(mobileNumber string) models.User
 	UpdateTokenByMobileNumber(mobileNumber string) (models.User, error)
 	CreateUser(user models.User) (models.User, error)
+	CheckAuth(id int) models.User
 }
 
 func RepositoryUser(db *gorm.DB) *repository {
@@ -26,4 +27,9 @@ func (r *repository) UpdateTokenByMobileNumber(mobileNumber string) (models.User
 func (r *repository) CreateUser(user models.User) (models.User, error) {
 	err := r.db.Create(&user).Error
 	return user, err
+}
+func (r *repository) CheckAuth(id int) models.User {
+	var user models.User
+	r.db.First(&user, "id = ?", id)
+	return user
 }
