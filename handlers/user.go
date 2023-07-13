@@ -44,12 +44,12 @@ func (h *Handler) SignUp(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	//check mobileNumber not exist in db
-	user := h.UserRepository.FindUserByMobileNumber(request.MobileNumber)
+	//check phoneNumber not exist in db
+	user := h.UserRepository.FindUserByPhoneNumber(request.PhoneNumber)
 	if user.Id != 0 {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This MobileNumber already exist"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This PhoneNumber already exist"})
 	}
-	//code, err := sendSMS(request.MobileNumber)
+	//code, err := sendSMS(request.PhoneNumber)
 	//if err != nil {
 	//	return c.JSON(http.StatusServiceUnavailable, dto.ErrorResult{Code: http.StatusServiceUnavailable, Message: err.Error()})
 	//}
@@ -61,13 +61,13 @@ func (h *Handler) SignUp(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
 
 	}
-	//set mobile number and code in redis
+	//set Phone number and code in redis
 	var ctx = context.Background()
-	err = redis.Rdb.Set(ctx, request.MobileNumber, string(redisValue), time.Minute+2*time.Second).Err()
+	err = redis.Rdb.Set(ctx, request.PhoneNumber, string(redisValue), time.Minute+2*time.Second).Err()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
 	}
-	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: request.MobileNumber})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: request.PhoneNumber})
 }
 
 func (h *Handler) Verify(c echo.Context) error {
@@ -76,9 +76,9 @@ func (h *Handler) Verify(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
 	}
-	//get origin code with mobile number in redis
+	//get origin code with Phone number in redis
 	ctx := context.Background()
-	redisValue, err := redis.Rdb.Get(ctx, request.MobileNumber).Result()
+	redisValue, err := redis.Rdb.Get(ctx, request.PhoneNumber).Result()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
 	}
@@ -99,7 +99,7 @@ func (h *Handler) Verify(c echo.Context) error {
 	user := models.User{
 		FirstName:    signUpRequest.FirstName,
 		LastName:     signUpRequest.LastName,
-		MobileNumber: request.MobileNumber,
+		PhoneNumber:  request.PhoneNumber,
 		Password:     string(hashedPassword),
 		IsVerify:     true,
 		RegisterTime: time.Now(),
@@ -140,7 +140,7 @@ func (h *Handler) Login(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
 	}
 	//check user exist
-	user := h.UserRepository.FindUserByMobileNumber(request.MobileNumber)
+	user := h.UserRepository.FindUserByPhoneNumber(request.PhoneNumber)
 	if user.Id == 0 {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This Email not exist"})
 	}
@@ -177,7 +177,7 @@ func (h *Handler) Forgot(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
 	}
 	//check user exist
-	user := h.UserRepository.FindUserByMobileNumber(request.Email)
+	user := h.UserRepository.FindUserByPhoneNumber(request.Email)
 	if user.Id == 0 {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This Email not exist"})
 	}
@@ -194,7 +194,7 @@ func (h *Handler) Forgot(c echo.Context) error {
 
 }
 
-func sendSMS(mobileNumber string) (string, error) {
+func sendSMS(phoneNumber string) (string, error) {
 	client := &http.Client{}
 	url := os.Getenv("KAVENEGAR_URL")
 	req, err := http.NewRequest("POST", url, nil)
@@ -206,7 +206,7 @@ func sendSMS(mobileNumber string) (string, error) {
 	// generate random number and print on console
 	code := strconv.Itoa(rand.Intn(999999-100000) + 10000)
 	q := req.URL.Query()
-	q.Add("receptor", mobileNumber)
+	q.Add("receptor", phoneNumber)
 	q.Add("token", code)
 	q.Add("template", "accounting")
 	req.URL.RawQuery = q.Encode()

@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	dto "dumbmerch/dto/result"
-	jwtToken "dumbmerch/pkg/jwt"
+	dto "accounting-project/dto/result"
+	jwtToken "accounting-project/pkg/jwt"
 	"net/http"
 	"strings"
 
