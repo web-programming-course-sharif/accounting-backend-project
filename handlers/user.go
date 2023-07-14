@@ -257,3 +257,40 @@ func (h *Handler) EditProfileStatus(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
 }
+
+func (h *Handler) Resend(c echo.Context) error {
+	request := new(authDto.ResendRequest)
+	err := c.Bind(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+	//get origin code with Phone number in redis
+	ctx := context.Background()
+	redisValue, err := redis.Rdb.Get(ctx, request.PhoneNumber).Result()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
+	}
+	//convert redis value to signUp value and get code
+	var signUpRequest authDto.SignUpRequest
+	err = json.Unmarshal([]byte(redisValue), &signUpRequest)
+	//send sms to client
+	code, err := sendSMS(request.PhoneNumber)
+	if err != nil {
+		return c.JSON(http.StatusServiceUnavailable, dto.ErrorResult{Code: http.StatusServiceUnavailable, Message: err.Error()})
+	}
+	//add code to request model and convert to json
+	signUpRequest.Code = code
+	newRedisValue, err := json.Marshal(signUpRequest)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
+
+	}
+	//set Phone number and code in redis
+	err = redis.Rdb.Set(ctx, request.PhoneNumber, string(newRedisValue), time.Minute+2*time.Second).Err()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: signUpRequest.PhoneNumber})
+
+}

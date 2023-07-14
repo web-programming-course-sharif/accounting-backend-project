@@ -11,6 +11,9 @@ type VerifyRequest struct {
 	PhoneNumber string `json:"phone_number" validation:"required"`
 	Code        string `json:"code" validation:"required"`
 }
+type ResendRequest struct {
+	PhoneNumber string `json:"phone_number" validation:"required"`
+}
 type LoginRequest struct {
 	PhoneNumber string `json:"phone_number" validate:"required,min=9"`
 	Password    string `json:"password" validate:"required,min=8"`
