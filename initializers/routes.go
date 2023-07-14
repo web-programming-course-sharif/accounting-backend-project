@@ -7,4 +7,5 @@ import (
 
 func RouteInit(e *echo.Group) {
 	routes.AuthRoutes(e)
+	routes.UserRoutes(e)
 }

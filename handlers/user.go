@@ -4,6 +4,7 @@ import (
 	authDto "accounting-project/dto/auth"
 	"accounting-project/dto/otp"
 	dto "accounting-project/dto/result"
+	userDao "accounting-project/dto/user"
 	"accounting-project/models"
 	jwtToken "accounting-project/pkg/jwt"
 	"accounting-project/pkg/redis"
@@ -141,7 +142,7 @@ func (h *Handler) Login(c echo.Context) error {
 	//check user exist
 	user := h.UserRepository.FindUserByPhoneNumber(request.PhoneNumber)
 	if user.Id == 0 {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This Email not exist"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This User not exist"})
 	}
 	//generate token
 	claims := jwt.MapClaims{}
@@ -231,6 +232,28 @@ func (h *Handler) CheckAuth(c echo.Context) error {
 	userId := userLogin.(jwt.MapClaims)["id"].(float64)
 
 	user := h.UserRepository.CheckAuth(int(userId))
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
+}
+
+func (h *Handler) EditProfileStatus(c echo.Context) error {
+	request := new(userDao.EditProfileStatusRequest)
+	err := c.Bind(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err = validation.Struct(request)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(float64)
+
+	user := h.UserRepository.EditProfileStatus(int(userId), request.IsPublic)
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
 }
