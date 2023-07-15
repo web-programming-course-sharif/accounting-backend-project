@@ -19,7 +19,7 @@ func HandlerCard(CardRepository repositories.CardRepository) *handlerCard {
 	return &handlerCard{CardRepository}
 }
 
-func (h handlerCard) CreateCard(c echo.Context) error {
+func (h *handlerCard) CreateCard(c echo.Context) error {
 	request := new(cardDto.CreateCardRequest)
 	err := c.Bind(request)
 	if err != nil {
@@ -35,6 +35,7 @@ func (h handlerCard) CreateCard(c echo.Context) error {
 
 	userLogin := c.Get("userLogin")
 	userId := userLogin.(jwt.MapClaims)["id"].(float64)
+
 	card := models.Card{
 		Name:       request.Name,
 		CardNumber: request.CardNumber,
@@ -48,4 +49,14 @@ func (h handlerCard) CreateCard(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: card})
+}
+func (h *handlerCard) GetAllCards(c echo.Context) error {
+
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(float64)
+
+	cards := h.CardRepository.GetAllCards(int(userId))
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: cards})
+
 }
