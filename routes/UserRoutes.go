@@ -15,5 +15,6 @@ func UserRoutes(e *echo.Group) {
 	e.POST("/editProfileStatus", middleware.Auth(h.EditProfileStatus))
 	e.POST("/changePassword", middleware.Auth(h.ChangePassword))
 	e.POST("/setPhoto", middleware.UploadFile(h.ChangePassword))
-	e.POST("/changeProfile", middleware.UploadFile(h.EditProfile))
+	e.POST("/changeProfile", middleware.Auth(h.EditProfile))
+	e.POST("/changeSocialLinks", middleware.Auth(h.EditSocialLinks))
 }

@@ -19,3 +19,9 @@ type EditProfileRequest struct {
 	Address   string `json:"address"`
 	About     string `json:"about"`
 }
+type EditSocialLinksRequest struct {
+	FacebookLink  string `json:"facebook_link"`
+	InstagramLink string `json:"instagram_link"`
+	LinkedinLink  string `json:"linkedin_link"`
+	TwitterLink   string `json:"twitter_link"`
+}
