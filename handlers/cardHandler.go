@@ -36,12 +36,11 @@ func (h handlerCard) CreateCard(c echo.Context) error {
 	userLogin := c.Get("userLogin")
 	userId := userLogin.(jwt.MapClaims)["id"].(float64)
 	card := models.Card{
-		Name:          request.Name,
-		CardNumber:    request.CardNumber,
-		AccountNumber: request.AccountNumber,
-		UserId:        int64(userId),
-		BankId:        request.BankId,
-		Balance:       request.Balance,
+		Name:       request.Name,
+		CardNumber: request.CardNumber,
+		UserId:     int64(userId),
+		BankId:     request.BankId,
+		Balance:    request.Balance,
 	}
 	card, err = h.CardRepository.CreateCard(card)
 	if err != nil {
