@@ -386,13 +386,18 @@ func sendSMSForPassword(phoneNumber string) (string, error) {
 func (h *Handler) EditProfile(c echo.Context) error {
 	dataFile := c.Get("dataFile").(string)
 	request := new(userDao.EditProfileRequest)
-	err := c.Bind(request)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
-	}
+	request.FirstName = c.FormValue("first_name")
+	request.LastName = c.FormValue("last_name")
+	request.Email = c.FormValue("email")
+	request.Country = c.FormValue("country")
+	request.State = c.FormValue("state")
+	request.City = c.FormValue("city")
+	request.ZipCode = c.FormValue("zip_code")
+	request.Address = c.FormValue("address")
+	request.About = c.FormValue("about")
 
 	validation := validator.New()
-	err = validation.Struct(request)
+	err := validation.Struct(request)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
