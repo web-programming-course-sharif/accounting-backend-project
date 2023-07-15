@@ -26,14 +26,14 @@ import (
 
 var path_file = "http://localhost:3535/uploads/"
 
-type Handler struct {
+type handlerUser struct {
 	UserRepository repositories.UserRepository
 }
 
-func HandlerUser(UserRepository repositories.UserRepository) *Handler {
-	return &Handler{UserRepository: UserRepository}
+func HandlerUser(UserRepository repositories.UserRepository) *handlerUser {
+	return &handlerUser{UserRepository: UserRepository}
 }
-func (h *Handler) SignUp(c echo.Context) error {
+func (h *handlerUser) SignUp(c echo.Context) error {
 	request := new(authDto.SignUpRequest)
 	err := c.Bind(request)
 	if err != nil {
@@ -72,7 +72,7 @@ func (h *Handler) SignUp(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: request.PhoneNumber})
 }
 
-func (h *Handler) Verify(c echo.Context) error {
+func (h *handlerUser) Verify(c echo.Context) error {
 	request := new(authDto.VerifyRequest)
 	err := c.Bind(request)
 	if err != nil {
@@ -130,7 +130,7 @@ func (h *Handler) Verify(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: response})
 
 }
-func (h *Handler) Login(c echo.Context) error {
+func (h *handlerUser) Login(c echo.Context) error {
 	request := new(authDto.LoginRequest)
 	err := c.Bind(request)
 	if err != nil {
@@ -173,7 +173,7 @@ func (h *Handler) Login(c echo.Context) error {
 
 }
 
-func (h *Handler) Forgot(c echo.Context) error {
+func (h *handlerUser) Forgot(c echo.Context) error {
 	request := new(authDto.ForgotRequest)
 	err := c.Bind(request)
 	if err != nil {
@@ -242,7 +242,7 @@ func sendSMS(phoneNumber string) (string, error) {
 	return "", errors.New(response.Entries[0].Message)
 }
 
-func (h *Handler) CheckAuth(c echo.Context) error {
+func (h *handlerUser) CheckAuth(c echo.Context) error {
 	userLogin := c.Get("userLogin")
 	userId := userLogin.(jwt.MapClaims)["id"].(float64)
 
@@ -252,7 +252,7 @@ func (h *Handler) CheckAuth(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
 }
 
-func (h *Handler) EditProfileStatus(c echo.Context) error {
+func (h *handlerUser) EditProfileStatus(c echo.Context) error {
 	request := new(userDao.EditProfileStatusRequest)
 	err := c.Bind(request)
 	if err != nil {
@@ -275,7 +275,7 @@ func (h *Handler) EditProfileStatus(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
 }
 
-func (h *Handler) Resend(c echo.Context) error {
+func (h *handlerUser) Resend(c echo.Context) error {
 	request := new(authDto.ResendRequest)
 	err := c.Bind(request)
 	if err != nil {
@@ -311,7 +311,7 @@ func (h *Handler) Resend(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: signUpRequest.PhoneNumber})
 
 }
-func (h *Handler) ChangePassword(c echo.Context) error {
+func (h *handlerUser) ChangePassword(c echo.Context) error {
 	request := new(userDao.ChangePasswordRequest)
 	err := c.Bind(request)
 	if err != nil {
@@ -383,7 +383,7 @@ func sendSMSForPassword(phoneNumber string) (string, error) {
 	return "", errors.New(response.Entries[0].Message)
 }
 
-func (h *Handler) EditProfile(c echo.Context) error {
+func (h *handlerUser) EditProfile(c echo.Context) error {
 	dataFile := c.Get("dataFile").(string)
 	request := new(userDao.EditProfileRequest)
 	request.FirstName = c.FormValue("first_name")
@@ -424,7 +424,7 @@ func (h *Handler) EditProfile(c echo.Context) error {
 
 }
 
-func (h *Handler) EditSocialLinks(c echo.Context) error {
+func (h *handlerUser) EditSocialLinks(c echo.Context) error {
 	request := new(userDao.EditSocialLinksRequest)
 	err := c.Bind(request)
 	if err != nil {

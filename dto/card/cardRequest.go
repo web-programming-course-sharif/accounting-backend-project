@@ -1,7 +1,9 @@
-package card
+package cardDto
 
-type createCard struct {
-	CardNumber string `json:"card_number" validation:"required"`
-	BankName   string `json:"bank_name" validation:"required"`
-	Balance    string `json:"balance" validation:"required"`
+type CreateCardRequest struct {
+	CardNumber    string  `json:"card_number" validation:"required"`
+	BankId        int     `json:"bank_id" validation:"required"`
+	Balance       float64 `json:"balance" validation:"required"`
+	AccountNumber string  `json:"account_number"`
+	Name          string  `json:"name" validation:"required"`
 }

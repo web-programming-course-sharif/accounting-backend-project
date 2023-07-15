@@ -9,11 +9,8 @@ import (
 )
 
 func CardRoutes(e *echo.Group) {
-	userRepository := repositories.RepositoryCard(postgres.DB)
-	h := handlers.HandlerUser(userRepository)
+	cardRepository := repositories.RepositoryCard(postgres.DB)
+	h := handlers.HandlerCard(cardRepository)
 
-	e.POST("/editProfileStatus", middleware.Auth(h.EditProfileStatus))
-	e.POST("/changePassword", middleware.Auth(h.ChangePassword))
-	e.POST("/changeProfile", middleware.Auth(middleware.UploadFile(h.EditProfile)))
-	e.POST("/changeSocialLinks", middleware.Auth(h.EditSocialLinks))
+	e.POST("/createCard", middleware.Auth(h.CreateCard))
 }

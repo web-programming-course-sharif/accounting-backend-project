@@ -2,8 +2,11 @@ package models
 
 type Card struct {
 	Id            int64
+	UserId        int64 `json:"userId"`
+	User          User  `gorm:"foreignKey:UserId;references:Id"`
 	CardNumber    string
-	Bank          Bank   `gorm:"foreignKey:Id;references:Id"`
+	BankId        int
+	Bank          Bank   `gorm:"foreignKey:BankId;references:Id"`
 	AccountNumber string `gorm:"unique"`
 	Name          string
 	Balance       float64
