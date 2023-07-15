@@ -19,5 +19,5 @@ type LoginRequest struct {
 	Password    string `json:"password" validate:"required,min=8"`
 }
 type ForgotRequest struct {
-	Email string `json:"email"`
+	PhoneNumber string `json:"phone_number" validate:"required,min=9"`
 }

@@ -182,18 +182,23 @@ func (h *Handler) Forgot(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
 	}
 	//check user exist
-	user := h.UserRepository.FindUserByPhoneNumber(request.Email)
+	user := h.UserRepository.FindUserByPhoneNumber(request.PhoneNumber)
 	if user.Id == 0 {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This Email not exist"})
 	}
-	password := "Aa123456789Aa"
+	password, err := sendSMSForPassword(request.PhoneNumber)
+	if err != nil {
+		return c.JSON(http.StatusServiceUnavailable, dto.ErrorResult{Code: http.StatusServiceUnavailable, Message: err.Error()})
+	}
+
 	//hashing password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
 	}
-	user.Password = string(hashedPassword)
+
+	user = h.UserRepository.ChangePassword(user.Id, string(hashedPassword))
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: ""})
 
@@ -335,4 +340,37 @@ func (h *Handler) ChangePassword(c echo.Context) error {
 	user = h.UserRepository.ChangePassword(int(userId), string(hashedPassword))
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
+}
+
+func sendSMSForPassword(phoneNumber string) (string, error) {
+	client := &http.Client{}
+	url := os.Getenv("KAVENEGAR_URL")
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return "", errors.New("errored when create request for sms server")
+	}
+	// set seed
+	rand.Seed(time.Now().UnixNano())
+	// generate random number and print on console
+	password := strconv.Itoa(rand.Intn(999999999-100000000) + 10000000)
+	q := req.URL.Query()
+	q.Add("receptor", phoneNumber)
+	q.Add("token", password)
+	q.Add("template", "accounting")
+	req.URL.RawQuery = q.Encode()
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", errors.New("errored when sending request to the server")
+	}
+	defer resp.Body.Close()
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	var response otp.Response
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		return "", errors.New("errored when converting json to response model")
+	}
+	if response.Return.Status == http.StatusOK {
+		return password, nil
+	}
+	return "", errors.New(response.Entries[0].Message)
 }
