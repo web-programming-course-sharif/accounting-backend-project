@@ -412,3 +412,39 @@ func (h *Handler) SetPhoto(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
 }
+
+func (h *Handler) EditProfile(c echo.Context) error {
+	request := new(userDao.EditProfileRequest)
+	err := c.Bind(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err = validation.Struct(request)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(float64)
+
+	user := h.UserRepository.CheckAuth(int(userId))
+
+	values := map[string]interface{}{
+		"first_name": request.FirstName,
+		"last_name":  request.LastName,
+		"email":      request.Email,
+		"country":    request.Country,
+		"state":      request.State,
+		"city":       request.City,
+		"zip_code":   request.ZipCode,
+		"address":    request.Address,
+		"about":      request.About,
+	}
+	user = h.UserRepository.ChangeProfile(int(userId), values)
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
+
+}

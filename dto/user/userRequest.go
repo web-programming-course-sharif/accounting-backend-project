@@ -8,3 +8,14 @@ type ChangePasswordRequest struct {
 	NewPassword        string `json:"new_password" validate:"required,min=8"`
 	ConfirmNewPassword string `json:"confirm_new_password" validate:"required,min=8"`
 }
+type EditProfileRequest struct {
+	FirstName string `json:"first_name" validate:"required,min=3"`
+	LastName  string `json:"last_name" validate:"required,min=3"`
+	Email     string `json:"email"`
+	Country   string `json:"country"`
+	State     string `json:"state"`
+	City      string `json:"city"`
+	ZipCode   string `json:"zip_code"`
+	Address   string `json:"address"`
+	About     string `json:"about"`
+}
