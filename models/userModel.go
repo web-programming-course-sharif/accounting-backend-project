@@ -16,10 +16,10 @@ type User struct {
 	State         string     `json:"state" gorm:"default:null"`
 	City          string     `json:"city" gorm:"default:null"`
 	Role          string     `json:"role" gorm:"default:null"`
-	FacebookLink  string     `json:"facebook_link" gorm:"default:null"`
-	InstagramLink string     `json:"instagram_link" gorm:"default:null"`
-	LinkedinLink  string     `json:"linkedin_link" gorm:"default:null"`
-	TwitterLink   string     `json:"twitter_link" gorm:"default:null"`
+	FacebookLink  string     `json:"facebookLink" gorm:"default:null"`
+	InstagramLink string     `json:"instagramLink" gorm:"default:null"`
+	LinkedinLink  string     `json:"linkedinLink" gorm:"default:null"`
+	TwitterLink   string     `json:"twitterLink" gorm:"default:null"`
 	Password      string     `json:"password" gorm:"not null"`
 	Email         string     `json:"email" gorm:"unique;default:null"`
 	PhoneNumber   string     `json:"phoneNumber" gorm:"unique;index;not null"`
