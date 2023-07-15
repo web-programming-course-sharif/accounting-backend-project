@@ -374,3 +374,41 @@ func sendSMSForPassword(phoneNumber string) (string, error) {
 	}
 	return "", errors.New(response.Entries[0].Message)
 }
+
+func (h *Handler) SetPhoto(c echo.Context) error {
+	request := new(userDao.ChangePasswordRequest)
+	err := c.Bind(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err = validation.Struct(request)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(float64)
+
+	user := h.UserRepository.CheckAuth(int(userId))
+
+	//check password
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.OldPassword))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "The phone number or password is wrong"})
+	}
+	if request.NewPassword != request.ConfirmNewPassword {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "The new password doesn't match the confirm password"})
+
+	}
+	//hashing password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.NewPassword), 10)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
+	}
+	user = h.UserRepository.ChangePassword(int(userId), string(hashedPassword))
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
+}
