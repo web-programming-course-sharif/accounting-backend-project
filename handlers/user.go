@@ -24,6 +24,8 @@ import (
 	"time"
 )
 
+var path_file = "http://localhost:3535/uploads/"
+
 type Handler struct {
 	UserRepository repositories.UserRepository
 }
@@ -118,6 +120,8 @@ func (h *Handler) Verify(c echo.Context) error {
 	if errGenerateToken != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
 	}
+
+	user.PhotoURL = path_file + user.PhotoURL
 	response := authDto.SignUpResponse{
 		User:  user,
 		Token: token,
@@ -159,6 +163,7 @@ func (h *Handler) Login(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
 	}
 
+	user.PhotoURL = path_file + user.PhotoURL
 	response := authDto.SignUpResponse{
 		User:  user,
 		Token: token,
@@ -243,6 +248,7 @@ func (h *Handler) CheckAuth(c echo.Context) error {
 
 	user := h.UserRepository.CheckAuth(int(userId))
 
+	user.PhotoURL = path_file + user.PhotoURL
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
 }
 
@@ -265,6 +271,7 @@ func (h *Handler) EditProfileStatus(c echo.Context) error {
 
 	user := h.UserRepository.EditProfileStatus(int(userId), request.IsPublic)
 
+	user.PhotoURL = path_file + user.PhotoURL
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
 }
 
@@ -339,6 +346,7 @@ func (h *Handler) ChangePassword(c echo.Context) error {
 	}
 	user = h.UserRepository.ChangePassword(int(userId), string(hashedPassword))
 
+	user.PhotoURL = path_file + user.PhotoURL
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
 }
 
@@ -375,45 +383,8 @@ func sendSMSForPassword(phoneNumber string) (string, error) {
 	return "", errors.New(response.Entries[0].Message)
 }
 
-func (h *Handler) SetPhoto(c echo.Context) error {
-	request := new(userDao.ChangePasswordRequest)
-	err := c.Bind(request)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
-	}
-
-	validation := validator.New()
-	err = validation.Struct(request)
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
-	}
-
-	userLogin := c.Get("userLogin")
-	userId := userLogin.(jwt.MapClaims)["id"].(float64)
-
-	user := h.UserRepository.CheckAuth(int(userId))
-
-	//check password
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.OldPassword))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "The phone number or password is wrong"})
-	}
-	if request.NewPassword != request.ConfirmNewPassword {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "The new password doesn't match the confirm password"})
-
-	}
-	//hashing password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.NewPassword), 10)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
-	}
-	user = h.UserRepository.ChangePassword(int(userId), string(hashedPassword))
-
-	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
-}
-
 func (h *Handler) EditProfile(c echo.Context) error {
+	dataFile := c.Get("dataFile").(string)
 	request := new(userDao.EditProfileRequest)
 	err := c.Bind(request)
 	if err != nil {
@@ -432,19 +403,18 @@ func (h *Handler) EditProfile(c echo.Context) error {
 
 	user := h.UserRepository.CheckAuth(int(userId))
 
-	values := map[string]interface{}{
-		"first_name": request.FirstName,
-		"last_name":  request.LastName,
-		"email":      request.Email,
-		"country":    request.Country,
-		"state":      request.State,
-		"city":       request.City,
-		"zip_code":   request.ZipCode,
-		"address":    request.Address,
-		"about":      request.About,
-	}
-	user = h.UserRepository.ChangeProfile(int(userId), values)
-
+	user.FirstName = request.FirstName
+	user.LastName = request.LastName
+	user.Email = request.Email
+	user.Country = request.Country
+	user.State = request.State
+	user.City = request.City
+	user.ZipCode = request.ZipCode
+	user.Address = request.Address
+	user.About = request.About
+	user.PhotoURL = dataFile
+	user = h.UserRepository.ChangeProfile(int(userId), user)
+	user.PhotoURL = path_file + user.PhotoURL
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
 
 }
@@ -468,14 +438,14 @@ func (h *Handler) EditSocialLinks(c echo.Context) error {
 
 	user := h.UserRepository.CheckAuth(int(userId))
 
-	values := map[string]interface{}{
-		"facebook_link":  request.FacebookLink,
-		"instagram_link": request.InstagramLink,
-		"linkedin_link":  request.LinkedinLink,
-		"twitter_link":   request.TwitterLink,
-	}
-	user = h.UserRepository.ChangeProfile(int(userId), values)
+	user.FacebookLink = request.FacebookLink
+	user.InstagramLink = request.InstagramLink
+	user.LinkedinLink = request.LinkedinLink
+	user.TwitterLink = request.TwitterLink
 
+	user = h.UserRepository.ChangeProfile(int(userId), user)
+
+	user.PhotoURL = path_file + user.PhotoURL
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
 
 }

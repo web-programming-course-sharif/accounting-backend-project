@@ -16,6 +16,7 @@ type User struct {
 	State         string     `json:"state" gorm:"default:null"`
 	City          string     `json:"city" gorm:"default:null"`
 	Role          string     `json:"role" gorm:"default:null"`
+	ZipCode       string     `json:"zip_code" gorm:"default:null"`
 	FacebookLink  string     `json:"facebookLink" gorm:"default:null"`
 	InstagramLink string     `json:"instagramLink" gorm:"default:null"`
 	LinkedinLink  string     `json:"linkedinLink" gorm:"default:null"`
