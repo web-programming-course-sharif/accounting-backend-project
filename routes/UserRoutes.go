@@ -13,6 +13,6 @@ func UserRoutes(e *echo.Group) {
 	h := handlers.HandlerUser(userRepository)
 
 	e.POST("/editProfileStatus", middleware.Auth(h.EditProfileStatus))
-	e.POST("/changePassword", h.ChangePassword)
+	e.POST("/changePassword", middleware.Auth(h.ChangePassword))
 	e.POST("/setPhoto", middleware.UploadFile(h.ChangePassword))
 }
