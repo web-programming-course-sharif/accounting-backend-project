@@ -25,5 +25,6 @@ func main() {
 	initializers.RouteInit(e.Group(""))
 
 	e.Static("/uploads", "./uploads")
+
 	e.Logger.Fatal(e.Start("0.0.0.0:3535"))
 }

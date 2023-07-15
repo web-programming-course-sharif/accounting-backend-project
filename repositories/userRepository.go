@@ -39,11 +39,13 @@ func (r *repository) CheckAuth(id int) models.User {
 func (r *repository) EditProfileStatus(id int, status bool) models.User {
 	var user models.User
 	r.db.Model(&user).Where("id = ?", id).Update("is_public", status)
+	r.db.First(&user, "id = ?", id)
 	return user
 }
 func (r *repository) ChangePassword(id int, password string) models.User {
 	var user models.User
 	r.db.Model(&user).Where("id = ?", id).Update("password", password)
+	r.db.First(&user, "id = ?", id)
 	return user
 }
 func (r *repository) ChangeProfile(id int, userModel models.User) models.User {
