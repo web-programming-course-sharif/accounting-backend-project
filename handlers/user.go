@@ -184,7 +184,7 @@ func (h *Handler) Forgot(c echo.Context) error {
 	//check user exist
 	user := h.UserRepository.FindUserByPhoneNumber(request.PhoneNumber)
 	if user.Id == 0 {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This Email not exist"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This Phone number not exist"})
 	}
 	password, err := sendSMSForPassword(request.PhoneNumber)
 	if err != nil {
