@@ -11,6 +11,7 @@ type UserRepository interface {
 	CreateUser(user models.User) (models.User, error)
 	CheckAuth(id int) models.User
 	EditProfileStatus(id int, status bool) models.User
+	ChangePassword(id int, password string) models.User
 }
 
 func RepositoryUser(db *gorm.DB) *repository {
@@ -37,5 +38,10 @@ func (r *repository) CheckAuth(id int) models.User {
 func (r *repository) EditProfileStatus(id int, status bool) models.User {
 	var user models.User
 	r.db.Model(&user).Where("id = ?", id).Update("is_public", status)
+	return user
+}
+func (r *repository) ChangePassword(id int, password string) models.User {
+	var user models.User
+	r.db.Model(&user).Where("id = ?", id).Update("password", password)
 	return user
 }

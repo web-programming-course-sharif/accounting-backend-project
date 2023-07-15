@@ -63,7 +63,7 @@ func (h *Handler) SignUp(c echo.Context) error {
 	}
 	//set Phone number and code in redis
 	var ctx = context.Background()
-	err = redis.Rdb.Set(ctx, request.PhoneNumber, string(redisValue), time.Minute+2*time.Second).Err()
+	err = redis.Rdb.Set(ctx, request.PhoneNumber, string(redisValue), time.Minute+10*time.Second).Err()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
 	}
@@ -142,7 +142,12 @@ func (h *Handler) Login(c echo.Context) error {
 	//check user exist
 	user := h.UserRepository.FindUserByPhoneNumber(request.PhoneNumber)
 	if user.Id == 0 {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "This User not exist"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "The phone number or password is wrong"})
+	}
+	//check password
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "The phone number or password is wrong"})
 	}
 	//generate token
 	claims := jwt.MapClaims{}
@@ -293,4 +298,41 @@ func (h *Handler) Resend(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: signUpRequest.PhoneNumber})
 
+}
+func (h *Handler) ChangePassword(c echo.Context) error {
+	request := new(userDao.ChangePasswordRequest)
+	err := c.Bind(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err = validation.Struct(request)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(float64)
+
+	user := h.UserRepository.CheckAuth(int(userId))
+
+	//check password
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.OldPassword))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "The phone number or password is wrong"})
+	}
+	if request.NewPassword != request.ConfirmNewPassword {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Code: http.StatusBadRequest, Message: "The new password doesn't match the confirm password"})
+
+	}
+	//hashing password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.NewPassword), 10)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
+	}
+	user = h.UserRepository.ChangePassword(int(userId), string(hashedPassword))
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: user})
 }

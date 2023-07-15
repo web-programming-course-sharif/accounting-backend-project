@@ -15,6 +15,7 @@ type User struct {
 	IsPublic     bool       `json:"isPublic" gorm:"default:true"`
 	State        string     `json:"state" gorm:"default:null"`
 	City         string     `json:"city" gorm:"default:null"`
+	Role         string     `json:"role" gorm:"default:null"`
 	Password     string     `json:"password" gorm:"not null"`
 	Email        string     `json:"email" gorm:"unique;default:null"`
 	PhoneNumber  string     `json:"phoneNumber" gorm:"unique;index;not null"`
