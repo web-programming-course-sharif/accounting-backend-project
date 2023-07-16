@@ -13,4 +13,6 @@ func CardRoutes(e *echo.Group) {
 	h := handlers.HandlerCard(cardRepository)
 
 	e.POST("/createCard", middleware.Auth(h.CreateCard))
+	e.POST("/deleteCard", middleware.Auth(h.DeleteCard))
+	e.POST("/editCard", middleware.Auth(h.EditCard))
 }
