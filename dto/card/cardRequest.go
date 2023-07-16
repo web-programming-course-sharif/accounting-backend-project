@@ -1,7 +1,7 @@
 package cardDto
 
 type CreateCardRequest struct {
-	CardNumber string  `json:"card_number" validation:"required"`
+	CardNumber string  `json:"card_number" validation:"required ,min=16,max16"`
 	BankId     int     `json:"bank_id" validation:"required"`
 	Balance    float64 `json:"balance" validation:"required"`
 	Name       string  `json:"name" validation:"required"`
