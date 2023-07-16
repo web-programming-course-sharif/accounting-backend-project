@@ -22,7 +22,7 @@ func (r *repository) CreateCard(card models.Card) (models.Card, error) {
 }
 func (r *repository) GetAllCards(userId int) []models.Card {
 	var cards []models.Card
-	r.db.Where("user_id = ?", userId).Find(&cards)
+	r.db.Where("user_id = ?", userId).Preload("Bank").Find(&cards)
 	// SELECT * FROM cards WHERE user_id = id OR user_id=nil;
 	return cards
 }
