@@ -5,7 +5,7 @@ type Card struct {
 	UserId        int64   `json:"userId"`
 	User          User    `json:"user" gorm:"foreignKey:UserId;references:Id"`
 	CardNumber    string  `json:"cardNumber" gorm:"unique"`
-	BankId        int     `json:"BankId"`
+	BankId        int     `json:"bankId"`
 	Bank          Bank    `json:"bank" gorm:"foreignKey:BankId;references:Id"`
 	AccountNumber string  `json:"accountNumber" gorm:"unique"`
 	Name          string  `json:"name"`
