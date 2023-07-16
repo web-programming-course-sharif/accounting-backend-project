@@ -15,4 +15,5 @@ func CardRoutes(e *echo.Group) {
 	e.POST("/createCard", middleware.Auth(h.CreateCard))
 	e.POST("/deleteCard", middleware.Auth(h.DeleteCard))
 	e.POST("/editCard", middleware.Auth(h.EditCard))
+	e.POST("/getAllCards", middleware.Auth(h.GetAllCards))
 }
