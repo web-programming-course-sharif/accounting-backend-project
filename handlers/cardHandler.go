@@ -56,7 +56,9 @@ func (h *handlerCard) GetAllCards(c echo.Context) error {
 	userId := userLogin.(jwt.MapClaims)["id"].(float64)
 
 	cards := h.CardRepository.GetAllCards(int(userId))
-
+	for i, card := range cards {
+		cards[i].Bank.Icon = pathFileBanks + card.Bank.Icon
+	}
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: cards})
 
 }
@@ -83,7 +85,9 @@ func (h *handlerCard) DeleteCard(c echo.Context) error {
 	userId := userLogin.(jwt.MapClaims)["id"].(float64)
 
 	cards := h.CardRepository.GetAllCards(int(userId))
-
+	for i, card := range cards {
+		cards[i].Bank.Icon = pathFileBanks + card.Bank.Icon
+	}
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: cards})
 
 }
@@ -118,7 +122,9 @@ func (h *handlerCard) EditCard(c echo.Context) error {
 	}
 
 	cards := h.CardRepository.GetAllCards(int(userId))
-
+	for i, card := range cards {
+		cards[i].Bank.Icon = pathFileBanks + card.Bank.Icon
+	}
 	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: cards})
 
 }
