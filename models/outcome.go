@@ -1,6 +1,6 @@
 package models
 
-type Income struct {
+type Outcome struct {
 	Id         uint     `json:"id" gorm:"primaryKey:autoIncrement"`
 	UserId     int64    `json:"userId"`
 	User       User     `json:"user" gorm:"foreignKey:UserId;references:Id"`
@@ -13,6 +13,6 @@ type Income struct {
 	Category   Category `json:"category" gorm:"foreignKey:CategoryId;references:Id"`
 }
 
-func (income *Income) TableName() string {
-	return "income"
+func (outcome *Outcome) TableName() string {
+	return "outcome"
 }
