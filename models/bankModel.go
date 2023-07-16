@@ -1,9 +1,9 @@
 package models
 
 type Bank struct {
-	Id     uint   `gorm:"primaryKey:autoIncrement"`
+	Id     uint   `json:"id" gorm:"primaryKey:autoIncrement"`
 	UserId int64  `json:"userId"`
-	User   User   `gorm:"foreignKey:UserId;references:Id"`
+	User   User   `json:"user" gorm:"foreignKey:UserId;references:Id"`
 	Name   string `json:"name"`
 	Icon   string `json:"icon"`
 }
