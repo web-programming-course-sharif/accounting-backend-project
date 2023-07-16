@@ -1,15 +1,15 @@
 package models
 
 type Card struct {
-	Id            int64
-	UserId        int64  `json:"userId"`
-	User          User   `gorm:"foreignKey:UserId;references:Id"`
-	CardNumber    string `gorm:"unique"`
-	BankId        int
-	Bank          Bank   `gorm:"foreignKey:BankId;references:Id"`
-	AccountNumber string `gorm:"unique"`
-	Name          string
-	Balance       float64
+	Id            int64   `json:"id"`
+	UserId        int64   `json:"userId"`
+	User          User    `json:"user" gorm:"foreignKey:UserId;references:Id"`
+	CardNumber    string  `json:"cardNumber" gorm:"unique"`
+	BankId        int     `json:"BankId"`
+	Bank          Bank    `json:"bank" gorm:"foreignKey:BankId;references:Id"`
+	AccountNumber string  `json:"accountNumber" gorm:"unique"`
+	Name          string  `json:"name"`
+	Balance       float64 `json:"balance"`
 }
 
 func (card *Card) TableName() string {
