@@ -44,11 +44,15 @@ func (h *handlerCard) CreateCard(c echo.Context) error {
 		Balance:    request.Balance,
 	}
 	card, err = h.CardRepository.CreateCard(card)
+
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
 	}
-
-	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: card})
+	cards := h.CardRepository.GetAllCards(int(userId))
+	for i, card := range cards {
+		cards[i].Bank.Icon = pathFileBanks + card.Bank.Icon
+	}
+	return c.JSON(http.StatusOK, dto.SuccessResult{Code: http.StatusOK, Data: cards})
 }
 func (h *handlerCard) GetAllCards(c echo.Context) error {
 
